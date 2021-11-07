@@ -1,0 +1,12 @@
+[package]
+name = "tres"
+version = "0.0.0"
+edition = "2021"
+authors = ["Ben Reeves"]
+description = "Effortless, low overhead error tracing in Rust"
+keywords = ["error", "tracing"]
+categories = ["rust-patterns"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
