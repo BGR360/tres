@@ -343,3 +343,20 @@ where
         }
     }
 }
+
+/////////////////////////////////////////////////////////////////////////////
+// Error extension trait
+/////////////////////////////////////////////////////////////////////////////
+
+/// An extension trait applied to all untraced error types that allows
+/// conversion to [`TracedError`].
+pub trait ErrorExt: Sized + NotTraced {
+    /// Wraps self in a `TracedError` and starts an error trace with the
+    /// caller's location.
+    #[track_caller]
+    fn trace<T: ErrorTrace + Default>(self) -> TracedError<Self, T> {
+        TracedError::new(self)
+    }
+}
+
+impl<E: NotTraced> ErrorExt for E {}
