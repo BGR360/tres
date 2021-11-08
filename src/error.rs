@@ -3,6 +3,10 @@ use crate::trace::ErrorTrace;
 
 use core::{fmt, panic};
 
+/////////////////////////////////////////////////////////////////////////////
+// TracedError
+/////////////////////////////////////////////////////////////////////////////
+
 /// Wraps a generic error value and keeps track of an error trace.
 #[derive(Clone)]
 pub struct TracedError<
@@ -248,5 +252,94 @@ where
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}: {:?}", &self.inner, &self.trace)
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// Blanket From impls
+/////////////////////////////////////////////////////////////////////////////
+
+/// An auto trait used to determine if two types are the same.
+pub auto trait NotSame {}
+impl<T> !NotSame for (T, T) {}
+
+/// An auto trait used to determine if a type is a `TracedError`.
+pub auto trait NotTraced {}
+impl<E, T: ErrorTrace> !NotTraced for TracedError<E, T> {}
+
+// Auto traits do not apply to non-sized types (e.g., `dyn Trait`), so we have
+// to manually write positive implementations of the above two traits for things
+// that might contain those types.
+impl<T: ?Sized> NotSame for Box<T> {}
+impl<T: ?Sized> NotTraced for Box<T> {}
+
+/// Enables `?` conversion from `TracedError<E, T>` to `TracedError<F, T>`, as
+/// long as `F: From<E>`.
+///
+/// # Examples
+///
+/// ```
+/// use tres::{Result, Result::Err, Result::Ok, TracedError};
+///
+/// fn foo() -> Result<(), TracedError<String>> {
+///     Ok(bar()?)
+/// }
+///
+/// fn bar() -> Result<(), TracedError<&'static str>> {
+///     Err(TracedError::new("Oops!"))
+/// }
+///
+/// let x: TracedError<String> = foo().unwrap_err();
+/// assert_eq!(x.inner(), "Oops!");
+/// assert_eq!(x.trace().0.len(), 2);
+/// ```
+impl<E, F, T> From<TracedError<E, T>> for TracedError<F, T>
+where
+    F: From<E>,
+    (E, F): NotSame,
+    T: ErrorTrace,
+{
+    #[inline]
+    fn from(source: TracedError<E, T>) -> Self {
+        Self {
+            inner: From::from(source.inner),
+            trace: source.trace,
+        }
+    }
+}
+
+/// Enables `?` conversion from `E` to `TracedError<F, T>`, as long as
+/// `F: From<E>`.
+///
+/// # Examples
+///
+/// ```
+/// use tres::{Result, Result::Err, Result::Ok, TracedError};
+///
+/// fn foo() -> Result<(), TracedError<String>> {
+///     Ok(bar()?)
+/// }
+///
+/// fn bar() -> Result<(), &'static str> {
+///     Err("Oops!")
+/// }
+///
+/// let x: TracedError<String> = foo().unwrap_err();
+/// assert_eq!(x.inner(), "Oops!");
+/// assert_eq!(x.trace().0.len(), 1);
+/// ```
+impl<E, F, T> From<E> for TracedError<F, T>
+where
+    E: NotTraced,
+    F: From<E>,
+    T: ErrorTrace + Default,
+{
+    fn from(source: E) -> Self {
+        Self {
+            inner: From::from(source),
+            // Use default() here, as we should already be inside a `?`
+            // invocation, and that will append the location for us.
+            trace: Default::default(),
+        }
     }
 }

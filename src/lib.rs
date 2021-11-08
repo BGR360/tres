@@ -1,6 +1,8 @@
 //! Effortless, low overhead error tracing in Rust.
 
+#![feature(auto_traits)]
 #![feature(min_specialization)]
+#![feature(negative_impls)]
 
 pub use tres_result as result;
 
