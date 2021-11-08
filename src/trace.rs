@@ -24,6 +24,16 @@ impl fmt::Display for Locations {
 
 impl fmt::Debug for Locations {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_list().entries(self.0.iter()).finish()
+        f.debug_list()
+            .entries(self.0.iter().map(|loc| LocationPrinter(loc)))
+            .finish()
+    }
+}
+
+struct LocationPrinter(&'static panic::Location<'static>);
+
+impl fmt::Debug for LocationPrinter {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}:{}:{}", self.0.file(), self.0.line(), self.0.column())
     }
 }
