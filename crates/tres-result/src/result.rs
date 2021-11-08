@@ -14,9 +14,10 @@ use self::Result::Ok;
 /// A drop-in replacement for [`core::result::Result`] that supports return
 /// tracing using the `?` operator.
 ///
-/// If the [`Err`] variant implements [`Traced`], then each invocation of the
-/// `?` operator on an [`Err`] variant will call [`Traced::trace()`] with the
-/// code location where `?` was invoked.
+/// If the [`Err`] variant implements [`Traced`][`crate::Traced`], then each
+/// invocation of the `?` operator on an [`Err`] variant will call
+/// [`Traced::trace()`][crate::Traced::trace] with the code location where `?`
+/// was invoked.
 #[derive(Copy, PartialEq, PartialOrd, Eq, Ord, Debug, Hash)]
 #[must_use = "this `Result` may be an `Err` variant, which should be handled"]
 pub enum Result<T, E> {
