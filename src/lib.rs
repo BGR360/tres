@@ -1,8 +1,3 @@
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
-}
+//! Effortless, low overhead error tracing in Rust.
+
+pub use tres_result::{Result, Traced};

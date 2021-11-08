@@ -1,16 +1,12 @@
 [package]
-name = "tres"
+name = "tres-result"
 version = "0.0.0"
 edition = "2021"
 authors = ["Ben Reeves"]
-description = "Effortless, low overhead error tracing in Rust"
+description = "A result type that supports return tracing via the `?` operator"
 keywords = ["error", "tracing"]
 categories = ["rust-patterns"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[workspace]
-members = ["crates/tres-result"]
-
 [dependencies]
-tres-result = { path = "crates/tres-result" }
