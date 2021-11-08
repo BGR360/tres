@@ -11,15 +11,12 @@ use core::{convert, fmt, hint, panic};
 use self::Result::Err;
 use self::Result::Ok;
 
-/// `Result` is a type that represents either success ([`Ok`]) or failure ([`Err`]).
+/// A drop-in replacement for [`core::result::Result`] that supports return
+/// tracing using the `?` operator.
 ///
-/// This type is equivalent to the standard library
-/// [`Result`][core::result::Result] type. However, it has specialized behavior
-/// whenever the error type `E` implements [`Traced`][crate::Traced].
-///
-/// If the error type `E` is `Traced`, then each invocation of the `?` operator
-/// on an [`Err`] variant will call [`Traced::trace()`] with the code location
-/// where `?` was invoked.
+/// If the [`Err`] variant implements [`Traced`], then each invocation of the
+/// `?` operator on an [`Err`] variant will call [`Traced::trace()`] with the
+/// code location where `?` was invoked.
 #[derive(Copy, PartialEq, PartialOrd, Eq, Ord, Debug, Hash)]
 #[must_use = "this `Result` may be an `Err` variant, which should be handled"]
 pub enum Result<T, E> {
