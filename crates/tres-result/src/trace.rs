@@ -5,7 +5,7 @@ use std::panic;
 /// [`Err`]: crate::Result::Err
 /// [`Result`]: crate::Result
 #[rustc_specialization_trait]
-pub trait Traced {
+pub trait Trace {
     /// Called during `?` with the code location of the `?` invocation.
     fn trace(&mut self, location: &'static panic::Location<'static>);
 }

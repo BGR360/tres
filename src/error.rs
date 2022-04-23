@@ -224,7 +224,7 @@ where
 /// The whole point. Enables tracing via `?` when used as an [`Err`] variant.
 ///
 /// [`Err`]: crate::result::Result::Err
-impl<E, T> crate::result::Traced for TracedError<E, T>
+impl<E, T> crate::result::Trace for TracedError<E, T>
 where
     T: Trace,
 {

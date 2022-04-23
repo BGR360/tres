@@ -2,21 +2,19 @@
 //!
 //! See the [standard library documentation][core::result] for more information.
 
-use crate::Traced;
-
 use core::iter::{FromIterator, FusedIterator, TrustedLen};
 use core::ops::{self, ControlFlow, Deref, DerefMut};
 use core::{convert, fmt, hint, panic};
 
-use self::Result::Err;
-use self::Result::Ok;
+use self::Result::{Err, Ok};
+use crate::Trace;
 
 /// A drop-in replacement for [`core::result::Result`] that supports return
 /// tracing using the `?` operator.
 ///
-/// If the [`Err`] variant implements [`Traced`][`crate::Traced`], then each
+/// If the [`Err`] variant implements [`Trace`][`crate::Trace`], then each
 /// invocation of the `?` operator on an [`Err`] variant will call
-/// [`Traced::trace()`][crate::Traced::trace] with the code location where `?`
+/// [`Trace::trace()`][crate::Trace::trace] with the code location where `?`
 /// was invoked.
 #[derive(Copy, PartialEq, PartialOrd, Eq, Ord, Debug, Hash)]
 #[must_use = "this `Result` may be an `Err` variant, which should be handled"]
@@ -93,7 +91,7 @@ where
 
 impl<T, E, F> ops::FromResidual<Result<convert::Infallible, E>> for Result<T, F>
 where
-    F: From<E> + Traced,
+    F: From<E> + Trace,
 {
     #[track_caller]
     #[inline]
@@ -128,7 +126,7 @@ where
 
 impl<T, E, F> ops::FromResidual<core::result::Result<convert::Infallible, E>> for Result<T, F>
 where
-    F: From<E> + Traced,
+    F: From<E> + Trace,
 {
     #[track_caller]
     #[inline]
@@ -163,7 +161,7 @@ where
 
 impl<T, E, F> ops::FromResidual<Result<convert::Infallible, E>> for core::result::Result<T, F>
 where
-    E: Traced,
+    E: Trace,
     F: From<E>,
 {
     #[track_caller]

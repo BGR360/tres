@@ -21,9 +21,9 @@
 // * Add crate features to correspond to the core Result features.
 
 mod result;
-mod traced;
+mod trace;
 
 #[doc(inline)]
 pub use result::Result;
 #[doc(inline)]
-pub use traced::Traced;
+pub use trace::Trace;
