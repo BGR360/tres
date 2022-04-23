@@ -1,10 +1,6 @@
 use core::{fmt, panic};
 
-/// A trait for types that store an error trace.
-pub trait Trace {
-    /// Appends a code location to the error trace.
-    fn trace(&mut self, location: &'static panic::Location);
-}
+use crate::Trace;
 
 /// A simple vector of Rust code locations.
 #[derive(Clone, Default, PartialEq, Eq)]

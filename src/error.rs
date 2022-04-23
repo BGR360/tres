@@ -2,10 +2,6 @@ use core::{fmt, panic};
 
 use crate::Trace;
 
-/////////////////////////////////////////////////////////////////////////////
-// Traced
-/////////////////////////////////////////////////////////////////////////////
-
 /// Wraps a generic error value and keeps track of an error trace.
 #[derive(Clone)]
 pub struct Traced<
@@ -342,20 +338,3 @@ where
         }
     }
 }
-
-/////////////////////////////////////////////////////////////////////////////
-// Error extension trait
-/////////////////////////////////////////////////////////////////////////////
-
-/// An extension trait applied to all untraced error types that allows
-/// conversion to [`Traced`].
-pub trait ErrorExt: Sized + NotTraced {
-    /// Wraps self in a `Traced` and starts an error trace with the
-    /// caller's location.
-    #[track_caller]
-    fn traced<T: Trace + Default>(self) -> Traced<Self, T> {
-        Traced::new(self)
-    }
-}
-
-impl<E: NotTraced> ErrorExt for E {}

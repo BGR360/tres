@@ -232,13 +232,13 @@
 pub use tres_result as result;
 
 pub mod error;
-mod trace;
+mod locations;
+mod traits;
 
-#[doc(inline)]
-pub use error::ErrorExt;
+pub use locations::Locations;
 pub use result::Result;
 pub use result::Result::{Err, Ok};
-pub use trace::{Locations, Trace};
+pub use traits::{ErrorExt, Trace};
 
 /// Alias to [`Traced<E, T>`] that uses a vector of locations for its trace.
 ///
