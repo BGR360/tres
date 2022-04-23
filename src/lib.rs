@@ -71,7 +71,7 @@
 //! mod crate_one {
 //! #   use super::crate_two;
 //! #   use tres::{Err, Ok, Result};
-//!     use tres::{ErrorExt as _, TracedError};
+//!     use tres::{ErrorExt, TracedError};
 //!
 //!     /* ... */
 //! #   #[derive(Debug)]
@@ -92,8 +92,8 @@
 //!         // `?` operator converts `TracedError<crate_two::Error>` to `TracedError<Error>`!
 //!         let size = crate_two::file_size("foo.txt")?;
 //!         if size > 1024 {
-//!             // `.trace()` converts `Error` to `TracedError<Error>`.
-//!             return Err(Error::FileTooLarge { size }.trace());
+//!             // `ErrorExt::traced()` converts `Error` to `TracedError<Error>`.
+//!             return Err(Error::FileTooLarge { size }.traced());
 //!         }
 //!         Ok(())
 //!     }
@@ -236,8 +236,8 @@ mod trace;
 
 #[doc(inline)]
 pub use error::ErrorExt;
-
-pub use result::{Result, Result::Err, Result::Ok};
+pub use result::Result;
+pub use result::Result::{Err, Ok};
 pub use trace::{Locations, Trace};
 
 /// Alias to [`TracedError<E, T>`] that uses a vector of locations for its trace.

@@ -353,7 +353,7 @@ pub trait ErrorExt: Sized + NotTraced {
     /// Wraps self in a `TracedError` and starts an error trace with the
     /// caller's location.
     #[track_caller]
-    fn trace<T: Trace + Default>(self) -> TracedError<Self, T> {
+    fn traced<T: Trace + Default>(self) -> TracedError<Self, T> {
         TracedError::new(self)
     }
 }
