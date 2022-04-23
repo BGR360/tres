@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["tres"] = [{"text":"impl&lt;E, T&gt; <a class=\"trait\" href=\"tres_result/trace/trait.Trace.html\" title=\"trait tres_result::trace::Trace\">Trace</a> for <a class=\"struct\" href=\"tres/struct.Traced.html\" title=\"struct tres::Traced\">Traced</a>&lt;E, T&gt; <span class=\"where fmt-newline\">where<br>&nbsp;&nbsp;&nbsp;&nbsp;T: <a class=\"trait\" href=\"tres/trait.Trace.html\" title=\"trait tres::Trace\">Trace</a>,&nbsp;</span>","synthetic":false,"types":["tres::traced::Traced"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

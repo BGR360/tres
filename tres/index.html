@@ -1,0 +1,170 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Effortless, low overhead error tracing in Rust."><meta name="keywords" content="rust, rustlang, rust-lang, tres"><title>tres - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../dark.css" disabled><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../storage.js"></script><script src="../crates.js"></script><script defer src="../main.js"></script>
+    <noscript><link rel="stylesheet" href="../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../favicon.svg"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../tres/index.html"><div class="logo-container"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></div>
+        </a><h2 class="location"></h2>
+    </nav>
+    <nav class="sidebar"><a class="sidebar-logo" href="../tres/index.html"><div class="logo-container"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></div>
+        </a><h2 class="location"><a href="#">Crate tres</a></h2><div class="sidebar-elems"><div class="block"><ul><li class="version">Version 0.0.0</li><li><a id="all-types" href="all.html">All Items</a></li></div></ul><section><div class="block"><ul><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li></ul></div></section><div id="sidebar-vars" data-name="tres" data-ty="mod" data-relpath=""></div><script defer src="sidebar-items.js"></script></div></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../tres/index.html"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="main-heading">
+    <h1 class="fqn"><span class="in-band">Crate <a class="mod" href="#">tres</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../src/tres/lib.rs.html#1-242">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Effortless, low overhead error tracing in Rust.</p>
+<p>Tres provides error traces with <strong>no stack unwinding</strong> and <strong>no symbol
+lookups</strong>. All you need to do is wrap your error type(s) with
+<a href="struct.Traced.html" title="Traced&lt;E&gt;"><code>Traced&lt;E&gt;</code></a> and make sure you use a <code>Result</code> type that
+<a href="#how-it-works">supports return tracing</a>.</p>
+<h2 id="usage"><a href="#usage">Usage</a></h2>
+<p>Consider the following two “crates” with their respective error types:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">mod</span> <span class="ident">crate_one</span> {
+    <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Error</span> {
+        <span class="ident">FileTooLarge</span> {
+            <span class="ident">size</span>: <span class="ident">u64</span>
+        },
+        <span class="ident">CrateTwo</span>(<span class="ident">crate_two::Error</span>),
+    }
+
+    <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">crate_two::Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
+        <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">crate_two::Error</span>) -&gt; <span class="self">Self</span> {
+            <span class="ident"><span class="self">Self</span>::CrateTwo</span>(<span class="ident">error</span>)
+        }
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">foo</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">crate_two::file_size</span>(<span class="string">&quot;foo.txt&quot;</span>)<span class="question-mark">?</span>;
+        <span class="kw">if</span> <span class="ident">size</span> <span class="op">&gt;</span> <span class="number">1024</span> {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::FileTooLarge</span> { <span class="ident">size</span> });
+        }
+        <span class="prelude-val">Ok</span>(())
+    }
+}
+
+<span class="kw">mod</span> <span class="ident">crate_two</span> {
+    <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Error</span>(<span class="kw">pub</span> <span class="ident">std::io::Error</span>);
+
+    <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">std::io::Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
+        <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">std::io::Error</span>) -&gt; <span class="self">Self</span> {
+            <span class="self">Self</span>(<span class="ident">error</span>)
+        }
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">file_size</span>(<span class="ident">filename</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">std::fs::File::open</span>(<span class="ident">filename</span>)<span class="question-mark">?</span>
+            .<span class="ident">metadata</span>()<span class="question-mark">?</span>
+            .<span class="ident">len</span>();
+        <span class="prelude-val">Ok</span>(<span class="ident">size</span>)
+    }
+}</code></pre></div>
+<p>Converting the code to provide error traces can be done in a few simple
+steps:</p>
+<ul>
+<li>Replace all <code>Result&lt;_, E&gt;</code> with <code>Result&lt;_, Traced&lt;E&gt;&gt;</code></li>
+<li>Use <a href="trait.ErrorExt.html#method.traced" title="ErrorExt::traced()"><code>ErrorExt::traced()</code></a> in all places where a new error is returned.</li>
+</ul>
+<p>And that’s it! Any existing type conversions that were happening as a result
+of the <code>?</code> operator will continue to work after switching over to <code>tres</code>.</p>
+<p>Here’s what the final result looks like:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">mod</span> <span class="ident">crate_one</span> {
+    <span class="kw">use</span> <span class="ident">tres</span>::{<span class="ident">ErrorExt</span>, <span class="ident">Traced</span>};
+
+    <span class="comment">/* ... */</span>
+
+    <span class="comment">// Result uses `Traced`.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">foo</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Traced</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="comment">// `?` operator converts `Traced&lt;crate_two::Error&gt;` to `Traced&lt;Error&gt;`!</span>
+        <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">crate_two::file_size</span>(<span class="string">&quot;foo.txt&quot;</span>)<span class="question-mark">?</span>;
+        <span class="kw">if</span> <span class="ident">size</span> <span class="op">&gt;</span> <span class="number">1024</span> {
+            <span class="comment">// `ErrorExt::traced()` converts `Error` to `Traced&lt;Error&gt;`.</span>
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::FileTooLarge</span> { <span class="ident">size</span> }.<span class="ident">traced</span>());
+        }
+        <span class="prelude-val">Ok</span>(())
+    }
+}
+
+<span class="kw">mod</span> <span class="ident">crate_two</span> {
+    <span class="kw">use</span> <span class="ident">tres::Traced</span>;
+
+    <span class="comment">/* ... */</span>
+
+    <span class="comment">// Result uses `Traced`.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">file_size</span>(<span class="ident">filename</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">Traced</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="comment">// `?` operator converts `std::io::Error` to `Traced&lt;Error&gt;`!</span>
+        <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">std::fs::File::open</span>(<span class="ident">filename</span>)<span class="question-mark">?</span>
+            .<span class="ident">metadata</span>()<span class="question-mark">?</span>
+            .<span class="ident">len</span>();
+        <span class="prelude-val">Ok</span>(<span class="ident">size</span>)
+    }
+}</code></pre></div>
+<p>And if we run that code…</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">fn</span> <span class="ident">main</span>() {
+    <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">crate_one::foo</span>().<span class="ident">unwrap_err</span>();
+    <span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">error</span>);
+}</code></pre></div>
+<p>We get the output below, complete with an error trace!</p>
+<div class="example-wrap"><pre class="language-text"><code>CrateTwo(Error(Os { code: 2, kind: NotFound, message: &quot;No such file or directory&quot; })):
+[src/lib.rs:51:20, src/lib.rs:26:20]</code></pre></div><h2 id="caveat-remember-to-propagate"><a href="#caveat-remember-to-propagate">Caveat: Remember to propagate!</a></h2>
+<p>The error trace inside a <a href="struct.Traced.html" title="Traced"><code>Traced</code></a> is appended to <strong>only</strong> when
+propagated using the try (<code>?</code>) operator. Because of this, it is important to
+ensure that all results in your code are propagated using the try operator,
+otherwise your error traces may end up missing certain locations.</p>
+<p>This can be avoided by ensuring that all return values are surrounded by
+<code>Ok(..?)</code>:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">fn</span> <span class="ident">gives_error</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Traced</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="prelude-val">Err</span>(<span class="ident">Traced::new</span>(<span class="string">&quot;Oops!&quot;</span>))
+}
+
+<span class="kw">fn</span> <span class="ident">foo</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Traced</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="comment">// !! NO !!</span>
+    <span class="ident">gives_error</span>()
+}
+
+<span class="kw">fn</span> <span class="ident">bar</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Traced</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="comment">// !! YES !!</span>
+    <span class="prelude-val">Ok</span>(<span class="ident">gives_error</span>()<span class="question-mark">?</span>)
+}</code></pre></div>
+<p>TODO: implement a lint to detect missing <code>Ok(..?)</code>.</p>
+<p>Another option is to make use of <a href="https://doc.rust-lang.org/beta/unstable-book/language-features/try-blocks.html">try blocks</a>. This makes it impossible to
+accidentally return a bare result without propagating it.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attribute">#![<span class="ident">feature</span>(<span class="ident">try_blocks</span>)]</span>
+<span class="kw">fn</span> <span class="ident">foo</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Traced</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">try</span> {
+        <span class="ident">gives_error</span>()<span class="question-mark">?</span>
+    }
+}</code></pre></div>
+
+<div class='information'><div class='tooltip compile_fail'>ⓘ</div></div><div class="example-wrap"><pre class="rust rust-example-rendered compile_fail"><code><span class="attribute">#![<span class="ident">feature</span>(<span class="ident">try_blocks</span>)]</span>
+<span class="kw">fn</span> <span class="ident">bar</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Traced</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">try</span> {
+        <span class="comment">// Does not compile without `?` operator!</span>
+        <span class="ident">gives_error</span>()
+    }
+}</code></pre></div>
+<h2 id="how-it-works"><a href="#how-it-works">How it works</a></h2>
+<p>The error tracing behavior of <code>tres</code> is made possible by specializing the
+<code>Result</code> type’s behavior during try-propagation (<code>?</code> operator). When the
+<code>Err</code> variant of the result supports tracing (as indicated by the presence
+of the <a href="../tres_result/trace/trait.Trace.html" title="tres_result::Trace"><code>Trace</code></a> trait), each invocation of the <code>?</code>
+operator calls <a href="../tres_result/trace/trait.Trace.html#tymethod.trace" title="tres_result::Trace::trace"><code>Trace::trace()</code></a> on the error
+with the location of the <code>?</code> invocation.</p>
+<p>For now, this behavior must be provided by a third party <code>Result</code> type. The
+<a href="../tres_result/index.html" title="tres_result"><code>tres-result</code></a> crate provides one; it is included in <code>tres</code> as
+<a href="enum.Result.html" title="Result"><code>Result</code></a>.</p>
+<p>Eventually, this crate is meant to be used with the standard library
+<code>Result</code> type. There will likely be an RFC to add a <code>Traced</code> trait to the
+standard library and specialize the behavior or <a href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="core::result::Result"><code>core::result::Result</code></a> in
+the same way that <a href="enum.Result.html" title="tres_result::Result"><code>tres_result::Result</code></a> is specialized.</p>
+</div></details><h2 id="reexports" class="small-section-header"><a href="#reexports">Re-exports</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left import-item"><code>pub use <a class="mod" href="../tres_result/index.html" title="mod tres_result">tres_result</a> as result;</code></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left import-item"><code>pub use result::Result::<a class="enum" href="enum.Result.html" title="enum tres::Result">Err</a>;</code></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left import-item"><code>pub use result::Result::<a class="enum" href="enum.Result.html" title="enum tres::Result">Ok</a>;</code></div><div class="item-right docblock-short"></div></div></div><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Locations.html" title="tres::Locations struct">Locations</a></div><div class="item-right docblock-short"><p>A simple vector of Rust code locations.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Traced.html" title="tres::Traced struct">Traced</a></div><div class="item-right docblock-short"><p>Wraps a generic error value and keeps track of an error trace.</p>
+</div></div></div><h2 id="enums" class="small-section-header"><a href="#enums">Enums</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.Result.html" title="tres::Result enum">Result</a></div><div class="item-right docblock-short"><p>A drop-in replacement for <a href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="core::result::Result"><code>core::result::Result</code></a> that supports return
+tracing using the <code>?</code> operator.</p>
+</div></div></div><h2 id="traits" class="small-section-header"><a href="#traits">Traits</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.ErrorExt.html" title="tres::ErrorExt trait">ErrorExt</a></div><div class="item-right docblock-short"><p>An extension trait applied to all untraced error types that allows
+conversion to <a href="struct.Traced.html" title="Traced"><code>Traced</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.Trace.html" title="tres::Trace trait">Trace</a></div><div class="item-right docblock-short"><p>A trait for types that store an error trace.</p>
+</div></div></div></section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="tres" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (f4ec0e7cf 2022-04-22)" ></div>
+</body></html>

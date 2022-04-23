@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Result","A drop-in replacement for [`core::result::Result`] that supports return tracing using the `?` operator."]],"trait":[["Trace","A trait that enables return tracing for `Err` variants of `Result`."]]});
