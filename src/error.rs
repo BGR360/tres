@@ -3,12 +3,12 @@ use core::{fmt, panic};
 use crate::Trace;
 
 /////////////////////////////////////////////////////////////////////////////
-// TracedError
+// Traced
 /////////////////////////////////////////////////////////////////////////////
 
 /// Wraps a generic error value and keeps track of an error trace.
 #[derive(Clone)]
-pub struct TracedError<
+pub struct Traced<
     // Type of the contained error value.
     E,
     // Type of the error trace.
@@ -22,7 +22,7 @@ pub struct TracedError<
     trace: T,
 }
 
-impl<E, T> TracedError<E, T>
+impl<E, T> Traced<E, T>
 where
     T: Trace + Default,
 {
@@ -33,19 +33,19 @@ where
     /// Basic usage:
     ///
     /// ```
-    /// use tres::TracedError;
+    /// use tres::Traced;
     ///
-    /// let x: TracedError<&str> = TracedError::new("Oops!");
+    /// let x: Traced<&str> = Traced::new("Oops!");
     /// ```
     ///
     /// Showing that the trace includes the caller of `new()`:
     ///
     /// ```
     /// use std::panic::Location;
-    /// use tres::{Locations, TracedError};
+    /// use tres::{Locations, Traced};
     ///
     /// let here: &Location = Location::caller();
-    /// let x: TracedError<&str> = TracedError::new("Oops!");
+    /// let x: Traced<&str> = Traced::new("Oops!");
     ///
     /// let locs: &Locations = x.trace();
     /// let there: &Location = locs.0.first().unwrap();
@@ -56,7 +56,7 @@ where
     ///
     /// ```
     /// use std::panic::Location;
-    /// use tres::error::TracedError;  // not tres::TracedError
+    /// use tres::error::Traced;  // not tres::Traced
     /// use tres::Trace;
     ///
     /// #[derive(Default)]
@@ -68,7 +68,7 @@ where
     ///     }
     /// }
     ///
-    /// let x: TracedError<&str, BangTrace> = TracedError::new("Oops!");
+    /// let x: Traced<&str, BangTrace> = Traced::new("Oops!");
     /// assert_eq!(&x.trace().0, "!");
     /// ```
     #[track_caller]
@@ -85,9 +85,9 @@ where
     /// Basic usage:
     ///
     /// ```
-    /// use tres::TracedError;
+    /// use tres::Traced;
     ///
-    /// let x: TracedError<&str> = TracedError::empty("Oops!");
+    /// let x: Traced<&str> = Traced::empty("Oops!");
     /// assert!(x.trace().0.is_empty());
     /// ```
     pub fn empty(inner: E) -> Self {
@@ -98,7 +98,7 @@ where
     }
 }
 
-impl<E, T> TracedError<E, T>
+impl<E, T> Traced<E, T>
 where
     T: Trace,
 {
@@ -109,9 +109,9 @@ where
     /// Basic usage:
     ///
     /// ```
-    /// use tres::TracedError;
+    /// use tres::Traced;
     ///
-    /// let x: TracedError<String> = TracedError::new("Oops!".to_string());
+    /// let x: Traced<String> = Traced::new("Oops!".to_string());
     ///
     /// let inner: &String = x.inner();
     /// assert_eq!(inner.as_str(), "Oops!");
@@ -127,9 +127,9 @@ where
     /// Basic usage:
     ///
     /// ```
-    /// use tres::{Locations, TracedError};
+    /// use tres::{Locations, Traced};
     ///
-    /// let x: TracedError<String> = TracedError::new("Oops!".to_string());
+    /// let x: Traced<String> = Traced::new("Oops!".to_string());
     ///
     /// let trace: &Locations = x.trace();
     /// assert_eq!(trace.0.len(), 1);
@@ -138,19 +138,19 @@ where
         &self.trace
     }
 
-    /// Constructs a new `TracedError` from an error value and a trace.
+    /// Constructs a new `Traced` from an error value and a trace.
     ///
     /// # Examples
     ///
     /// Basic usage:
     ///
     /// ```
-    /// use tres::{Locations, TracedError};
+    /// use tres::{Locations, Traced};
     ///
     /// let error: String = "Oops!".into();
     /// let trace: Locations = Default::default();
     ///
-    /// let x = TracedError::from_parts(error, trace);
+    /// let x = Traced::from_parts(error, trace);
     /// assert_eq!(x.inner(), &"Oops!");
     /// assert_eq!(x.trace(), &Locations(vec![]));
     /// ```
@@ -165,9 +165,9 @@ where
     /// Basic usage:
     ///
     /// ```
-    /// use tres::{Locations, TracedError};
+    /// use tres::{Locations, Traced};
     ///
-    /// let x: TracedError<String> = TracedError::new("Oops!".to_string());
+    /// let x: Traced<String> = Traced::new("Oops!".to_string());
     ///
     /// let (error, trace): (String, Locations) = x.into_parts();
     /// assert_eq!(error, "Oops!".to_string());
@@ -185,9 +185,9 @@ where
     /// Basic usage:
     ///
     /// ```
-    /// use tres::TracedError;
+    /// use tres::Traced;
     ///
-    /// let x: TracedError<String> = TracedError::new("Oops!".to_string());
+    /// let x: Traced<String> = Traced::new("Oops!".to_string());
     ///
     /// let error: String = x.into_inner();
     /// assert_eq!(error, "Oops!".to_string());
@@ -197,7 +197,7 @@ where
         inner
     }
 
-    /// Maps a `TracedError<E, T>` to `TracedError<F, T>` by applying a function
+    /// Maps a `Traced<E, T>` to `Traced<F, T>` by applying a function
     /// to the contained error value, leaving the error trace untouched.
     ///
     /// # Examples
@@ -205,16 +205,16 @@ where
     /// Basic usage:
     ///
     /// ```
-    /// use tres::TracedError;
+    /// use tres::Traced;
     ///
-    /// let x: TracedError<u32> = TracedError::new(42);
+    /// let x: Traced<u32> = Traced::new(42);
     /// assert_eq!(x.trace().0.len(), 1);
     ///
-    /// let x: TracedError<String> = x.map(|i| i.to_string());
+    /// let x: Traced<String> = x.map(|i| i.to_string());
     /// assert_eq!(x.trace().0.len(), 1);
     /// ```
-    pub fn map<F, O: FnOnce(E) -> F>(self, op: O) -> TracedError<F, T> {
-        TracedError {
+    pub fn map<F, O: FnOnce(E) -> F>(self, op: O) -> Traced<F, T> {
+        Traced {
             inner: op(self.inner),
             trace: self.trace,
         }
@@ -224,7 +224,7 @@ where
 /// The whole point. Enables tracing via `?` when used as an [`Err`] variant.
 ///
 /// [`Err`]: crate::result::Result::Err
-impl<E, T> crate::result::Trace for TracedError<E, T>
+impl<E, T> crate::result::Trace for Traced<E, T>
 where
     T: Trace,
 {
@@ -234,7 +234,7 @@ where
     }
 }
 
-impl<E, T> fmt::Display for TracedError<E, T>
+impl<E, T> fmt::Display for Traced<E, T>
 where
     E: fmt::Display,
     T: Trace + fmt::Display,
@@ -244,7 +244,7 @@ where
     }
 }
 
-impl<E, T> fmt::Debug for TracedError<E, T>
+impl<E, T> fmt::Debug for Traced<E, T>
 where
     E: fmt::Debug,
     T: Trace + fmt::Debug,
@@ -262,9 +262,9 @@ where
 pub auto trait NotSame {}
 impl<T> !NotSame for (T, T) {}
 
-/// An auto trait used to determine if a type is a `TracedError`.
+/// An auto trait used to determine if a type is a `Traced`.
 pub auto trait NotTraced {}
-impl<E, T: Trace> !NotTraced for TracedError<E, T> {}
+impl<E, T: Trace> !NotTraced for Traced<E, T> {}
 
 // Auto traits do not apply to non-sized types (e.g., `dyn Trait`), so we have
 // to manually write positive implementations of the above two traits for things
@@ -272,34 +272,34 @@ impl<E, T: Trace> !NotTraced for TracedError<E, T> {}
 impl<T: ?Sized> NotSame for Box<T> {}
 impl<T: ?Sized> NotTraced for Box<T> {}
 
-/// Enables `?` conversion from `TracedError<E, T>` to `TracedError<F, T>`, as
+/// Enables `?` conversion from `Traced<E, T>` to `Traced<F, T>`, as
 /// long as `F: From<E>`.
 ///
 /// # Examples
 ///
 /// ```
-/// use tres::{Result, Result::Err, Result::Ok, TracedError};
+/// use tres::{Result, Result::Err, Result::Ok, Traced};
 ///
-/// fn foo() -> Result<(), TracedError<String>> {
+/// fn foo() -> Result<(), Traced<String>> {
 ///     Ok(bar()?)
 /// }
 ///
-/// fn bar() -> Result<(), TracedError<&'static str>> {
-///     Err(TracedError::new("Oops!"))
+/// fn bar() -> Result<(), Traced<&'static str>> {
+///     Err(Traced::new("Oops!"))
 /// }
 ///
-/// let x: TracedError<String> = foo().unwrap_err();
+/// let x: Traced<String> = foo().unwrap_err();
 /// assert_eq!(x.inner(), "Oops!");
 /// assert_eq!(x.trace().0.len(), 2);
 /// ```
-impl<E, F, T> From<TracedError<E, T>> for TracedError<F, T>
+impl<E, F, T> From<Traced<E, T>> for Traced<F, T>
 where
     F: From<E>,
     (E, F): NotSame,
     T: Trace,
 {
     #[inline]
-    fn from(source: TracedError<E, T>) -> Self {
+    fn from(source: Traced<E, T>) -> Self {
         Self {
             inner: From::from(source.inner),
             trace: source.trace,
@@ -307,15 +307,15 @@ where
     }
 }
 
-/// Enables `?` conversion from `E` to `TracedError<F, T>`, as long as
+/// Enables `?` conversion from `E` to `Traced<F, T>`, as long as
 /// `F: From<E>`.
 ///
 /// # Examples
 ///
 /// ```
-/// use tres::{Result, Result::Err, Result::Ok, TracedError};
+/// use tres::{Result, Result::Err, Result::Ok, Traced};
 ///
-/// fn foo() -> Result<(), TracedError<String>> {
+/// fn foo() -> Result<(), Traced<String>> {
 ///     Ok(bar()?)
 /// }
 ///
@@ -323,11 +323,11 @@ where
 ///     Err("Oops!")
 /// }
 ///
-/// let x: TracedError<String> = foo().unwrap_err();
+/// let x: Traced<String> = foo().unwrap_err();
 /// assert_eq!(x.inner(), "Oops!");
 /// assert_eq!(x.trace().0.len(), 1);
 /// ```
-impl<E, F, T> From<E> for TracedError<F, T>
+impl<E, F, T> From<E> for Traced<F, T>
 where
     E: NotTraced,
     F: From<E>,
@@ -348,13 +348,13 @@ where
 /////////////////////////////////////////////////////////////////////////////
 
 /// An extension trait applied to all untraced error types that allows
-/// conversion to [`TracedError`].
+/// conversion to [`Traced`].
 pub trait ErrorExt: Sized + NotTraced {
-    /// Wraps self in a `TracedError` and starts an error trace with the
+    /// Wraps self in a `Traced` and starts an error trace with the
     /// caller's location.
     #[track_caller]
-    fn traced<T: Trace + Default>(self) -> TracedError<Self, T> {
-        TracedError::new(self)
+    fn traced<T: Trace + Default>(self) -> Traced<Self, T> {
+        Traced::new(self)
     }
 }
 

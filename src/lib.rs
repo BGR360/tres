@@ -2,7 +2,7 @@
 //!
 //! Tres provides error traces with **no stack unwinding** and **no symbol
 //! lookups**. All you need to do is wrap your error type(s) with
-//! [`TracedError<E>`] and make sure you use a `Result` type that
+//! [`Traced<E>`] and make sure you use a `Result` type that
 //! [supports return tracing](#how-it-works).
 //!
 //! # Usage
@@ -58,7 +58,7 @@
 //! Converting the code to provide error traces can be done in a few simple
 //! steps:
 //!
-//! * Replace all `Result<_, E>` with `Result<_, TracedError<E>>`
+//! * Replace all `Result<_, E>` with `Result<_, Traced<E>>`
 //! * Use [`ErrorExt::trace()`] in all places where a new error is returned.
 //!
 //! And that's it! Any existing type conversions that were happening as a result
@@ -71,7 +71,7 @@
 //! mod crate_one {
 //! #   use super::crate_two;
 //! #   use tres::{Err, Ok, Result};
-//!     use tres::{ErrorExt, TracedError};
+//!     use tres::{ErrorExt, Traced};
 //!
 //!     /* ... */
 //! #   #[derive(Debug)]
@@ -87,12 +87,12 @@
 //! #       }
 //! #   }
 //!
-//!     // Result uses `TracedError`.
-//!     pub fn foo() -> Result<(), TracedError<Error>> {
-//!         // `?` operator converts `TracedError<crate_two::Error>` to `TracedError<Error>`!
+//!     // Result uses `Traced`.
+//!     pub fn foo() -> Result<(), Traced<Error>> {
+//!         // `?` operator converts `Traced<crate_two::Error>` to `Traced<Error>`!
 //!         let size = crate_two::file_size("foo.txt")?;
 //!         if size > 1024 {
-//!             // `ErrorExt::traced()` converts `Error` to `TracedError<Error>`.
+//!             // `ErrorExt::traced()` converts `Error` to `Traced<Error>`.
 //!             return Err(Error::FileTooLarge { size }.traced());
 //!         }
 //!         Ok(())
@@ -101,7 +101,7 @@
 //!
 //! mod crate_two {
 //! #   use tres::{Err, Ok, Result};
-//!     use tres::TracedError;
+//!     use tres::Traced;
 //!
 //!     /* ... */
 //! #   #[derive(Debug)]
@@ -112,9 +112,9 @@
 //! #       }
 //! #   }
 //!
-//!     // Result uses `TracedError`.
-//!     pub fn file_size(filename: &str) -> Result<u64, TracedError<Error>> {
-//!         // `?` operator converts `std::io::Error` to `TracedError<Error>`!
+//!     // Result uses `Traced`.
+//!     pub fn file_size(filename: &str) -> Result<u64, Traced<Error>> {
+//!         // `?` operator converts `std::io::Error` to `Traced<Error>`!
 //!         let size = std::fs::File::open(filename)?
 //!             .metadata()?
 //!             .len();
@@ -129,8 +129,8 @@
 //! ```no_run
 //! # #[allow(clippy::needless_doctest_main)]
 //! # mod crate_one {
-//! #   use tres::TracedError;
-//! #   pub fn foo() -> Result<(), TracedError<()>> { Ok(()) }
+//! #   use tres::Traced;
+//! #   pub fn foo() -> Result<(), Traced<()>> { Ok(()) }
 //! # }
 //! fn main() {
 //!     let error = crate_one::foo().unwrap_err();
@@ -147,7 +147,7 @@
 //!
 //! # Caveat: Remember to propagate!
 //!
-//! The error trace inside a [`TracedError`] is appended to **only** when
+//! The error trace inside a [`Traced`] is appended to **only** when
 //! propagated using the try (`?`) operator. Because of this, it is important to
 //! ensure that all results in your code are propagated using the try operator,
 //! otherwise your error traces may end up missing certain locations.
@@ -156,17 +156,17 @@
 //! `Ok(..?)`:
 //!
 //! ```
-//! # use tres::TracedError;
-//! fn gives_error() -> Result<(), TracedError<&'static str>> {
-//!     Err(TracedError::new("Oops!"))
+//! # use tres::Traced;
+//! fn gives_error() -> Result<(), Traced<&'static str>> {
+//!     Err(Traced::new("Oops!"))
 //! }
 //!
-//! fn foo() -> Result<(), TracedError<&'static str>> {
+//! fn foo() -> Result<(), Traced<&'static str>> {
 //!     // !! NO !!
 //!     gives_error()
 //! }
 //!
-//! fn bar() -> Result<(), TracedError<&'static str>> {
+//! fn bar() -> Result<(), Traced<&'static str>> {
 //!     // !! YES !!
 //!     Ok(gives_error()?)
 //! }
@@ -182,11 +182,11 @@
 //!
 //! ```
 //! #![feature(try_blocks)]
-//! # use tres::TracedError;
-//! # fn gives_error() -> Result<(), TracedError<&'static str>> {
-//! #     Err(TracedError::new("Oops!"))
+//! # use tres::Traced;
+//! # fn gives_error() -> Result<(), Traced<&'static str>> {
+//! #     Err(Traced::new("Oops!"))
 //! # }
-//! fn foo() -> Result<(), TracedError<&'static str>> {
+//! fn foo() -> Result<(), Traced<&'static str>> {
 //!     try {
 //!         gives_error()?
 //!     }
@@ -195,11 +195,11 @@
 //!
 //! ```compile_fail
 //! #![feature(try_blocks)]
-//! # use tres::TracedError;
-//! # fn gives_error() -> Result<(), TracedError<&'static str>> {
-//! #     Err(TracedError::new("Oops!"))
+//! # use tres::Traced;
+//! # fn gives_error() -> Result<(), Traced<&'static str>> {
+//! #     Err(Traced::new("Oops!"))
 //! # }
-//! fn bar() -> Result<(), TracedError<&'static str>> {
+//! fn bar() -> Result<(), Traced<&'static str>> {
 //!     try {
 //!         // Does not compile without `?` operator!
 //!         gives_error()
@@ -240,9 +240,9 @@ pub use result::Result;
 pub use result::Result::{Err, Ok};
 pub use trace::{Locations, Trace};
 
-/// Alias to [`TracedError<E, T>`] that uses a vector of locations for its trace.
+/// Alias to [`Traced<E, T>`] that uses a vector of locations for its trace.
 ///
-/// If you want to use your own trace type, use [`TracedError<E, T>`].
+/// If you want to use your own trace type, use [`Traced<E, T>`].
 ///
-/// [`TracedError<E, T>`]: error::TracedError
-pub type TracedError<E> = error::TracedError<E, Locations>;
+/// [`Traced<E, T>`]: error::Traced
+pub type Traced<E> = error::Traced<E, Locations>;
