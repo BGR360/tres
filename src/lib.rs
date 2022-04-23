@@ -59,7 +59,7 @@
 //! steps:
 //!
 //! * Replace all `Result<_, E>` with `Result<_, Traced<E>>`
-//! * Use [`ErrorExt::trace()`] in all places where a new error is returned.
+//! * Use [`ErrorExt::traced()`] in all places where a new error is returned.
 //!
 //! And that's it! Any existing type conversions that were happening as a result
 //! of the `?` operator will continue to work after switching over to `tres`.
@@ -212,8 +212,8 @@
 //! The error tracing behavior of `tres` is made possible by specializing the
 //! `Result` type's behavior during try-propagation (`?` operator). When the
 //! `Err` variant of the result supports tracing (as indicated by the presence
-//! of the [`Traced`][tres_result::Traced] trait), each invocation of the `?`
-//! operator calls [`Traced::trace()`][tres_result::Traced::trace] on the error
+//! of the [`Trace`][tres_result::Trace] trait), each invocation of the `?`
+//! operator calls [`Trace::trace()`][tres_result::Trace::trace] on the error
 //! with the location of the `?` invocation.
 //!
 //! For now, this behavior must be provided by a third party `Result` type. The

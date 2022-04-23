@@ -1,12 +1,12 @@
 //! This crate provides two things:
 //!
-//! [`tres_result::Traced`], a trait that enables an error value to be traced as
+//! [`tres_result::Trace`], a trait that enables an error value to be traced as
 //! it propagates through different parts of the source code.
 //!
 //! [`tres_result::Result`], a drop-in substitute for [`Result`] that allows
-//! tracking the propagation of [`Traced`] errors using the `?` operator.
+//! tracking the propagation of [`Trace`]-able errors using the `?` operator.
 //!
-//! [`tres_result::Traced`]: crate::Traced
+//! [`tres_result::Trace`]: crate::Trace
 //! [`tres_result::Result`]: crate::Result
 //! [`Result`]: core::result::Result
 
@@ -23,7 +23,5 @@
 mod result;
 mod trace;
 
-#[doc(inline)]
 pub use result::Result;
-#[doc(inline)]
 pub use trace::Trace;
