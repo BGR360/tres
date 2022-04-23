@@ -1,19 +1,17 @@
 use core::{fmt, panic};
 
-use crate::Trace;
+use crate::{Locations, Trace};
 
 /// Wraps a generic error value and keeps track of an error trace.
 #[derive(Clone)]
-pub struct Traced<
-    // Type of the contained error value.
-    E,
-    // Type of the error trace.
+pub struct Traced<E, T = Locations>
+where
     // NOTE: this trait bound has to be in the struct definition, otherwise we
     // won't be allowed to use the trait bound when implementing `Traced`.
     // This is because of the restrictions of `feature(min_specialization)`
     // imparted by `#[rustc_specialization_trait]`.
     T: Trace,
-> {
+{
     inner: E,
     trace: T,
 }
@@ -52,8 +50,7 @@ where
     ///
     /// ```
     /// use std::panic::Location;
-    /// use tres::traced::Traced;  // not tres::Traced
-    /// use tres::Trace;
+    /// use tres::{Trace, Traced};
     ///
     /// #[derive(Default)]
     /// struct BangTrace(pub String);
