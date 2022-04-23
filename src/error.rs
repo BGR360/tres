@@ -1,7 +1,6 @@
-use crate::result::Traced;
-use crate::trace::ErrorTrace;
-
 use core::{fmt, panic};
+
+use crate::Trace;
 
 /////////////////////////////////////////////////////////////////////////////
 // TracedError
@@ -17,7 +16,7 @@ pub struct TracedError<
     // won't be allowed to use the trait bound when implementing `Traced`.
     // This is because of the restrictions of `feature(min_specialization)`
     // imparted by `#[rustc_specialization_trait]`.
-    T: ErrorTrace,
+    T: Trace,
 > {
     inner: E,
     trace: T,
@@ -25,7 +24,7 @@ pub struct TracedError<
 
 impl<E, T> TracedError<E, T>
 where
-    T: ErrorTrace + Default,
+    T: Trace + Default,
 {
     /// Wraps the given error and starts a new trace with the caller's location.
     ///
@@ -57,14 +56,14 @@ where
     ///
     /// ```
     /// use std::panic::Location;
-    /// use tres::ErrorTrace;
     /// use tres::error::TracedError;  // not tres::TracedError
+    /// use tres::Trace;
     ///
     /// #[derive(Default)]
     /// struct BangTrace(pub String);
     ///
-    /// impl ErrorTrace for BangTrace {
-    ///     fn append_location(&mut self, _location: &'static Location) {
+    /// impl Trace for BangTrace {
+    ///     fn trace(&mut self, _location: &'static Location) {
     ///         self.0.push('!');
     ///     }
     /// }
@@ -75,7 +74,7 @@ where
     #[track_caller]
     pub fn new(inner: E) -> Self {
         let mut trace: T = Default::default();
-        trace.append_location(panic::Location::caller());
+        trace.trace(panic::Location::caller());
         Self { inner, trace }
     }
 
@@ -101,7 +100,7 @@ where
 
 impl<E, T> TracedError<E, T>
 where
-    T: ErrorTrace,
+    T: Trace,
 {
     /// Returns a reference to the contained error value.
     ///
@@ -225,20 +224,20 @@ where
 /// The whole point. Enables tracing via `?` when used as an [`Err`] variant.
 ///
 /// [`Err`]: crate::result::Result::Err
-impl<E, T> Traced for TracedError<E, T>
+impl<E, T> crate::result::Traced for TracedError<E, T>
 where
-    T: ErrorTrace,
+    T: Trace,
 {
     #[inline]
     fn trace(&mut self, location: &'static panic::Location) {
-        self.trace.append_location(location);
+        self.trace.trace(location);
     }
 }
 
 impl<E, T> fmt::Display for TracedError<E, T>
 where
     E: fmt::Display,
-    T: ErrorTrace + fmt::Display,
+    T: Trace + fmt::Display,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}: {}", &self.inner, &self.trace)
@@ -248,7 +247,7 @@ where
 impl<E, T> fmt::Debug for TracedError<E, T>
 where
     E: fmt::Debug,
-    T: ErrorTrace + fmt::Debug,
+    T: Trace + fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}: {:?}", &self.inner, &self.trace)
@@ -265,7 +264,7 @@ impl<T> !NotSame for (T, T) {}
 
 /// An auto trait used to determine if a type is a `TracedError`.
 pub auto trait NotTraced {}
-impl<E, T: ErrorTrace> !NotTraced for TracedError<E, T> {}
+impl<E, T: Trace> !NotTraced for TracedError<E, T> {}
 
 // Auto traits do not apply to non-sized types (e.g., `dyn Trait`), so we have
 // to manually write positive implementations of the above two traits for things
@@ -297,7 +296,7 @@ impl<E, F, T> From<TracedError<E, T>> for TracedError<F, T>
 where
     F: From<E>,
     (E, F): NotSame,
-    T: ErrorTrace,
+    T: Trace,
 {
     #[inline]
     fn from(source: TracedError<E, T>) -> Self {
@@ -332,7 +331,7 @@ impl<E, F, T> From<E> for TracedError<F, T>
 where
     E: NotTraced,
     F: From<E>,
-    T: ErrorTrace + Default,
+    T: Trace + Default,
 {
     fn from(source: E) -> Self {
         Self {
@@ -354,7 +353,7 @@ pub trait ErrorExt: Sized + NotTraced {
     /// Wraps self in a `TracedError` and starts an error trace with the
     /// caller's location.
     #[track_caller]
-    fn trace<T: ErrorTrace + Default>(self) -> TracedError<Self, T> {
+    fn trace<T: Trace + Default>(self) -> TracedError<Self, T> {
         TracedError::new(self)
     }
 }

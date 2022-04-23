@@ -238,7 +238,7 @@ mod trace;
 pub use error::ErrorExt;
 
 pub use result::{Result, Result::Err, Result::Ok};
-pub use trace::{ErrorTrace, Locations};
+pub use trace::{Locations, Trace};
 
 /// Alias to [`TracedError<E, T>`] that uses a vector of locations for its trace.
 ///
