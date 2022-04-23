@@ -1,6 +1,6 @@
 use core::panic;
 
-use crate::error::{NotTraced, Traced};
+use crate::traced::{NotTraced, Traced};
 
 /// A trait for types that store an error trace.
 pub trait Trace {

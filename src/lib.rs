@@ -231,8 +231,8 @@
 
 pub use tres_result as result;
 
-pub mod error;
 mod locations;
+pub mod traced;
 mod traits;
 
 pub use locations::Locations;
@@ -244,5 +244,5 @@ pub use traits::{ErrorExt, Trace};
 ///
 /// If you want to use your own trace type, use [`Traced<E, T>`].
 ///
-/// [`Traced<E, T>`]: error::Traced
-pub type Traced<E> = error::Traced<E, Locations>;
+/// [`Traced<E, T>`]: traced::Traced
+pub type Traced<E> = traced::Traced<E, Locations>;

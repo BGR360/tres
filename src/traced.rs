@@ -52,7 +52,7 @@ where
     ///
     /// ```
     /// use std::panic::Location;
-    /// use tres::error::Traced;  // not tres::Traced
+    /// use tres::traced::Traced;  // not tres::Traced
     /// use tres::Trace;
     ///
     /// #[derive(Default)]
