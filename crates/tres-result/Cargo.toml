@@ -3,10 +3,9 @@ name = "tres-result"
 version = "0.0.0"
 edition = "2021"
 authors = ["Ben Reeves"]
+license = "MIT OR Apache-2.0"
 description = "A result type that supports return tracing via the `?` operator"
 keywords = ["error", "tracing"]
 categories = ["rust-patterns"]
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
