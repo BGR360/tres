@@ -10,8 +10,6 @@
 //! [`tres_result::Result`]: crate::Result
 //! [`Result`]: core::result::Result
 
-#![feature(min_specialization)]
-#![feature(rustc_attrs)]
 #![feature(try_trait_v2)]
 // Needed in order to implement certain unstable apis on [`Result`].
 #![feature(never_type, trusted_len)]

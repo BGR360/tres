@@ -300,13 +300,12 @@ where
     }
 }
 
-/// Enables `?` conversion from `E` to `Traced<F, T>`, as long as
-/// `F: From<E>`.
+/// Enables `?` conversion from `E` to `Traced<F, T>`, as long as `F: From<E>`.
 ///
 /// # Examples
 ///
 /// ```
-/// use tres::{Result, Result::Err, Result::Ok, Traced};
+/// use tres::Traced;
 ///
 /// fn foo() -> Result<(), Traced<String>> {
 ///     Ok(bar()?)
@@ -318,7 +317,6 @@ where
 ///
 /// let x: Traced<String> = foo().unwrap_err();
 /// assert_eq!(x.inner(), "Oops!");
-/// assert_eq!(x.trace().0.len(), 1);
 /// ```
 impl<E, F, T> From<E> for Traced<F, T>
 where

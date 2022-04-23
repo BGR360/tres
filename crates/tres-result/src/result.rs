@@ -54,7 +54,10 @@ impl<T, E> From<Result<T, E>> for core::result::Result<T, E> {
 // Try trait
 /////////////////////////////////////////////////////////////////////////////
 
-impl<T, E> ops::Try for Result<T, E> {
+impl<T, E> ops::Try for Result<T, E>
+where
+    E: Trace,
+{
     type Output = T;
     type Residual = Result<convert::Infallible, E>;
 
@@ -75,19 +78,6 @@ impl<T, E> ops::Try for Result<T, E> {
 /////////////////////////////////////////////////////////////////////////////
 // FromResidual: tres_result::Result -> tres_result::Result
 /////////////////////////////////////////////////////////////////////////////
-
-impl<T, E, F> ops::FromResidual<Result<convert::Infallible, E>> for Result<T, F>
-where
-    F: From<E>,
-{
-    #[inline]
-    default fn from_residual(residual: Result<convert::Infallible, E>) -> Self {
-        match residual {
-            Ok(_) => unreachable!(),
-            Err(e) => Err(From::from(e)),
-        }
-    }
-}
 
 impl<T, E, F> ops::FromResidual<Result<convert::Infallible, E>> for Result<T, F>
 where
@@ -113,19 +103,6 @@ where
 
 impl<T, E, F> ops::FromResidual<core::result::Result<convert::Infallible, E>> for Result<T, F>
 where
-    F: From<E>,
-{
-    #[inline]
-    default fn from_residual(residual: core::result::Result<convert::Infallible, E>) -> Self {
-        match residual {
-            core::result::Result::Ok(_) => unreachable!(),
-            core::result::Result::Err(e) => Err(From::from(e)),
-        }
-    }
-}
-
-impl<T, E, F> ops::FromResidual<core::result::Result<convert::Infallible, E>> for Result<T, F>
-where
     F: From<E> + Trace,
 {
     #[track_caller]
@@ -145,19 +122,6 @@ where
 /////////////////////////////////////////////////////////////////////////////
 // FromResidual: tres_result::Result -> core::result::Result
 /////////////////////////////////////////////////////////////////////////////
-
-impl<T, E, F> ops::FromResidual<Result<convert::Infallible, E>> for core::result::Result<T, F>
-where
-    F: From<E>,
-{
-    #[inline]
-    default fn from_residual(residual: Result<convert::Infallible, E>) -> Self {
-        match residual {
-            Ok(_) => unreachable!(),
-            Err(e) => core::result::Result::Err(From::from(e)),
-        }
-    }
-}
 
 impl<T, E, F> ops::FromResidual<Result<convert::Infallible, E>> for core::result::Result<T, F>
 where
